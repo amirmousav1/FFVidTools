@@ -1,3 +1,16 @@
+@font-face {
+  font-family: iranyekan;
+  font-style: normal;
+  font-weight: normal;
+  src: url("./fonts/eot/IRANYekanWebRegular.eot");
+  src: url("./fonts/eot/IRANYekanWebRegular.eot") format("embedded-opentype"),
+    /* IE6-8 */ url("./fonts/woff/IRANYekanWebRegular.woff") format("woff"),
+    /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
+      url("./fonts/woff2/IRANYekanWebRegular.woff2") format("woff2"),
+    /* FF39+,Chrome36+, Opera24+*/ url("./fonts/ttf/IRANYekanWebRegular.ttf")
+      format("truetype");
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -95,4 +108,17 @@ input {
   cursor: pointer;
   color: #3f72af;
   font-size: 14px;
+}
+
+.error {
+  background-color: #ff0000a8 !important;
+}
+
+.success {
+  background-color: #008000c7 !important;
+}
+
+.success a {
+  color: #fff;
+  text-decoration: none;
 }

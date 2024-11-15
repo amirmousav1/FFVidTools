@@ -1,8 +1,11 @@
-# React + Vite
+# FFVidTools - FFmpeg Video Editor
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**FFVidTools** is a simple web-based video editor that allows users to upload videos, apply various editing options such as trimming, bitrate adjustment, framerate modification, and watermarking. The app processes the video using the power of **FFmpeg** on the backend, enabling users to download the edited video after processing.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Trim Video**: Specify start time and duration to trim the video.
+- **Adjust Bitrate**: Change the video's bitrate for optimized performance or quality.
+- **Change Framerate**: Modify the video's framerate.
+- **Watermarking**: Add a watermark image to the video.
+- **Download Edited Video**: After processing, download the edited video file.

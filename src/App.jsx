@@ -1,79 +1,171 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import "./style.css";
 import Spinner from "./Spinner";
 
+const API_URL = "http://147.78.0.23";
+
+const initialState = {
+  isLoading: false,
+  video: null,
+  videoID: null,
+  watermark: null,
+  bitrate: "",
+  frameRate: "",
+  trimStartMin: "",
+  trimStartSec: "",
+  trimDurationMin: "",
+  trimDurationSec: "",
+  downloadLink: null,
+  isFileTrimActive: false,
+  isFileBitrateActive: false,
+  isFileFramerateActive: false,
+  isFileWatermarkActive: false,
+  error: null,
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "loading":
+      return { ...state, isLoading: true };
+
+    case "notLoading":
+      return { ...state, isLoading: false };
+
+    case "error/set":
+      return { ...state, error: action.payload };
+
+    case "error/clear":
+      return { ...state, error: null };
+
+    case "video/upload":
+      return { ...state, video: action.payload };
+
+    case "video/setID":
+      return { ...state, videoID: action.payload };
+
+    case "watermark/upload":
+      return { ...state, watermark: action.payload };
+
+    case "bitrate/set":
+      return { ...state, bitrate: action.payload };
+
+    case "framerate/set":
+      return { ...state, frameRate: action.payload };
+
+    case "trimStartMin/set":
+      return { ...state, trimStartMin: action.payload };
+
+    case "trimStartSec/set":
+      return { ...state, trimStartSec: action.payload };
+
+    case "trimDurationMin/set":
+      return { ...state, trimDurationMin: action.payload };
+
+    case "trimDurationSec/set":
+      return { ...state, trimDurationSec: action.payload };
+
+    case "downloadLink/set":
+      return { ...state, downloadLink: action.payload };
+
+    case "downloadLink/clear":
+      return { ...state, downloadLink: null };
+
+    case "isFileTrimActive/toggle":
+      return { ...state, isFileTrimActive: !state.isFileTrimActive };
+
+    case "isFileBitrateActive/toggle":
+      return { ...state, isFileBitrateActive: !state.isFileBitrateActive };
+
+    case "isFileFramerateActive/toggle":
+      return { ...state, isFileFramerateActive: !state.isFileFramerateActive };
+
+    case "isFileWatermarkActive/toggle":
+      return { ...state, isFileWatermarkActive: !state.isFileWatermarkActive };
+
+    default:
+      return state;
+  }
+}
+
 function App() {
-  // ُStates
-  const [isLoading, setIsLoading] = useState(false);
-
-  const [video, setVideo] = useState();
-  const [videoID, setVideoID] = useState();
-  const [watermark, setWatermark] = useState();
-  const [bitrate, setBitrate] = useState("");
-  const [frameRate, setFrameRate] = useState("");
-  const [startMin, setStartMin] = useState("");
-  const [startSec, setStartSec] = useState("");
-  const [endMin, setEndMin] = useState("");
-  const [endSec, setEndSec] = useState("");
-  const [downloadLink, setDownloadLink] = useState(null);
-
-  const [isFileTrimActive, setIsFileTrimActive] = useState(false);
-  const [isFileBitrateActive, setIsFileBitrateActive] = useState(false);
-  const [isFileFramerateActive, setIsFileFramerateActive] = useState(false);
-  const [isFileWatermarkActive, setIsFileWatermarkActive] = useState(false);
+  const [
+    {
+      isLoading,
+      video,
+      videoID,
+      watermark,
+      bitrate,
+      frameRate,
+      trimStartMin,
+      trimStartSec,
+      trimDurationMin,
+      trimDurationSec,
+      downloadLink,
+      isFileTrimActive,
+      isFileBitrateActive,
+      isFileFramerateActive,
+      isFileWatermarkActive,
+      error,
+    },
+    dispatch,
+  ] = useReducer(reducer, initialState);
 
   function handleUploadVideo(e) {
-    setVideo(e.target.files[0]);
+    dispatch({ type: "video/upload", payload: e.target.files[0] });
   }
 
   function handleUploadWatermark(e) {
-    setWatermark(e.target.files[0]);
+    dispatch({ type: "watermark/upload", payload: e.target.files[0] });
   }
 
   function handleSubmit(e) {
     e.preventDefault();
     async function postData() {
       try {
-        setIsLoading(true);
-        const obj = {};
+        dispatch({ type: "error/clear" });
+        dispatch({ type: "loading" });
+
+        const formData = new FormData();
 
         if (isFileWatermarkActive) {
-          const formData = new FormData();
           formData.append("watermark", watermark);
-          obj.watermark = formData;
         }
 
         if (isFileBitrateActive) {
-          obj.bitrate = bitrate;
+          formData.append("bitrate", bitrate);
         }
 
         if (isFileFramerateActive) {
-          obj.framerate = +frameRate;
+          formData.append("framerate", +frameRate);
         }
 
         if (isFileTrimActive) {
-          const end = +endMin * 60 + Number(endSec);
-          const start = +startMin * 60 + Number(startSec);
-          obj["trim[duration]"] = end;
-          obj["trim[start]"] = start;
+          const duration = +trimDurationMin * 60 + Number(trimDurationSec);
+          const start = +trimStartMin * 60 + Number(trimStartSec);
+          formData.append("trim[duration]", duration);
+          formData.append("trim[start]", start);
         }
 
-        const res = await fetch(
-          `https://6b82-178-173-170-5.ngrok-free.app/api/${videoID}/edit`,
-          {
-            method: "POST",
-            body: new URLSearchParams(obj),
-          }
-        );
+        const res = await fetch(`${API_URL}/api/${videoID}/edit`, {
+          method: "POST",
+          body: formData,
+        });
         const data = await res.json();
-        setDownloadLink(
-          `https://6b82-178-173-170-5.ngrok-free.app/${data.download_path}`
-        );
+        if (data.download_path) {
+          dispatch({
+            type: "downloadLink/set",
+            payload: `${API_URL}/${data.download_path}`,
+          });
+        }
+        if (data.error) {
+          dispatch({ type: "error/set", payload: data.error });
+          dispatch({ type: "downloadLink/clear" });
+        }
         console.log(data);
       } catch (err) {
         console.log(err);
       } finally {
-        setIsLoading(false);
+        dispatch({ type: "notLoading" });
       }
     }
     postData();
@@ -83,43 +175,37 @@ function App() {
     function () {
       if (!video) return;
       async function postVideo() {
+        dispatch({ type: "loading" });
         try {
-          setIsLoading(true);
           const formData = new FormData();
           formData.append("video", video);
-          const res = await fetch(
-            "https://6b82-178-173-170-5.ngrok-free.app/api/upload",
-            {
-              method: "POST",
-              body: formData,
-            }
-          );
+          const res = await fetch(`${API_URL}/api/upload`, {
+            method: "POST",
+            body: formData,
+          });
           const data = await res.json();
-          setVideoID(data.video_id);
+          dispatch({ type: "video/setID", payload: data.video_id });
           console.log(data);
           if (data.video_id) {
             const getVideoData = await fetch(
-              `https://6b82-178-173-170-5.ngrok-free.app/api/${data.video_id}/information`
+              `${API_URL}/api/${data.video_id}/information`
             );
             const videoData = await getVideoData.json();
-            setBitrate(videoData.bitrate);
-            const fRate = videoData.frame_rate.replace("/", ".");
-            setFrameRate(fRate);
+            dispatch({ type: "bitrate/set", payload: videoData.bitrate });
+            const formattedFrameRate = Number(
+              videoData.frame_rate.replace("/", ".")
+            );
+            dispatch({ type: "framerate/set", payload: formattedFrameRate });
             console.log(videoData);
           }
         } catch (err) {
           console.log(err.message);
+          dispatch({ type: "error/set", payload: err.message });
         } finally {
-          setIsLoading(false);
+          dispatch({ type: "notLoading" });
         }
       }
-
-      const controller = new AbortController();
-      postVideo(controller);
-
-      return () => {
-        controller.abort();
-      };
+      postVideo();
     },
     [video]
   );
@@ -134,7 +220,7 @@ function App() {
             id="selectFile"
             type="file"
             onChange={handleUploadVideo}
-            // accept="video/*"
+            accept="video/*"
           />
         </div>
         {video && (
@@ -145,7 +231,7 @@ function App() {
                   type="checkbox"
                   id="changeDuration"
                   checked={isFileTrimActive}
-                  onChange={(e) => setIsFileTrimActive((c) => !c)}
+                  onChange={() => dispatch({ type: "isFileTrimActive/toggle" })}
                 />
                 <label htmlFor="changeDuration">اعمال برش</label>
               </div>
@@ -155,35 +241,55 @@ function App() {
                   id="startMin"
                   type="number"
                   placeholder="دقیقه"
-                  value={startMin}
-                  onChange={(e) => setStartMin(e.target.value)}
+                  value={trimStartMin}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "trimStartMin/set",
+                      payload: e.target.value,
+                    })
+                  }
                   disabled={!isFileTrimActive}
                 />
                 <input
                   id="startSec"
                   type="number"
                   placeholder="ثانیه"
-                  value={startSec}
-                  onChange={(e) => setStartSec(e.target.value)}
+                  value={trimStartSec}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "trimStartSec/set",
+                      payload: e.target.value,
+                    })
+                  }
                   disabled={!isFileTrimActive}
                 />
               </div>
               <div>
-                <label htmlFor="endMin">زمان پایان</label>
+                <label htmlFor="endMin">مدت زمان</label>
                 <input
                   id="endMin"
                   type="number"
                   placeholder="دقیقه"
-                  value={endMin}
-                  onChange={(e) => setEndMin(e.target.value)}
+                  value={trimDurationMin}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "trimDurationMin/set",
+                      payload: e.target.value,
+                    })
+                  }
                   disabled={!isFileTrimActive}
                 />
                 <input
                   id="endSec"
                   type="number"
                   placeholder="ثانیه"
-                  value={endSec}
-                  onChange={(e) => setEndSec(e.target.value)}
+                  value={trimDurationSec}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "trimDurationSec/set",
+                      payload: e.target.value,
+                    })
+                  }
                   disabled={!isFileTrimActive}
                 />
               </div>
@@ -194,7 +300,9 @@ function App() {
                   type="checkbox"
                   id="changeBitrate"
                   checked={isFileBitrateActive}
-                  onChange={(e) => setIsFileBitrateActive((c) => !c)}
+                  onChange={() =>
+                    dispatch({ type: "isFileBitrateActive/toggle" })
+                  }
                 />
                 <label htmlFor="changeBitrate">تغییر بیت ریت</label>
               </div>
@@ -203,7 +311,9 @@ function App() {
                 type="number"
                 placeholder="بیت ریت"
                 value={bitrate}
-                onChange={(e) => setBitrate(e.target.value)}
+                onChange={(e) =>
+                  dispatch({ type: "bitrate/set", payload: e.target.value })
+                }
                 disabled={!isFileBitrateActive}
               />
             </div>
@@ -213,7 +323,9 @@ function App() {
                   type="checkbox"
                   id="changeFramerate"
                   checked={isFileFramerateActive}
-                  onChange={(e) => setIsFileFramerateActive((c) => !c)}
+                  onChange={() =>
+                    dispatch({ type: "isFileFramerateActive/toggle" })
+                  }
                 />
                 <label htmlFor="changeFramerate">تغییر فریم ریت</label>
               </div>
@@ -222,7 +334,9 @@ function App() {
                 type="number"
                 placeholder="فریم ریت"
                 value={frameRate}
-                onChange={(e) => setFrameRate(e.target.value)}
+                onChange={(e) =>
+                  dispatch({ type: "framerate/set", payload: e.target.value })
+                }
                 disabled={!isFileFramerateActive}
               />
             </div>
@@ -232,7 +346,9 @@ function App() {
                   type="checkbox"
                   id="changeWatermark"
                   checked={isFileWatermarkActive}
-                  onChange={(e) => setIsFileWatermarkActive((c) => !c)}
+                  onChange={() =>
+                    dispatch({ type: "isFileWatermarkActive/toggle" })
+                  }
                 />
                 <label htmlFor="changeWatermark">انتخاب واترمارک</label>
               </div>
@@ -248,8 +364,13 @@ function App() {
               ارسال
             </button>
             {downloadLink && (
-              <div>
+              <div className="success">
                 <a href={downloadLink}>دانلود خروجی</a>
+              </div>
+            )}
+            {error && (
+              <div className="error">
+                <p>{error}</p>
               </div>
             )}
           </>

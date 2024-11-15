@@ -2,7 +2,7 @@ import { useEffect, useReducer } from "react";
 import "./style.css";
 import Spinner from "./Spinner";
 
-const API_URL = "http://147.78.0.23";
+const API_URL = "https://ffmpeg.4li.tech";
 
 const initialState = {
   isLoading: false,

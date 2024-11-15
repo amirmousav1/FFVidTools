@@ -1,0 +1,98 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  height: 100dvh;
+  background-color: #f9f7f7;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  direction: rtl;
+  font-family: iranyekan;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: #dbe2ef;
+  padding: 25px;
+  border-radius: 25px;
+  /*  */
+  width: 750px;
+}
+
+.form div {
+  background-color: #3f72af;
+  padding: 5px 10px;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 5px;
+  flex-basis: 100%;
+}
+
+.form div input[type="checkbox"] {
+  flex-basis: 0;
+  margin-left: 5px;
+}
+
+.form div input {
+  flex-basis: 100%;
+}
+
+.form div label {
+  flex-basis: 100%;
+}
+.form div select {
+  flex-basis: 100%;
+  height: 30px;
+  direction: ltr;
+}
+
+.trim div {
+  flex-basis: 100%;
+}
+input {
+  border: 1px solid black;
+  font-family: iranyekan;
+}
+
+.trim div input {
+  height: 20px;
+  width: 50px;
+}
+
+.spinner {
+  position: absolute;
+  top: 0;
+  width: 100dvw;
+  left: 0;
+  height: 100dvh;
+  background-color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: iranyekan;
+  direction: rtl;
+}
+
+.spinner span {
+  background-color: #000;
+  color: #fff;
+  padding: 25px 50px;
+  border-radius: 35px;
+}
+
+.btn {
+  height: 40px;
+  border: 2px solid #3f72af;
+  font-family: iranyekan;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #3f72af;
+  font-size: 14px;
+}
